@@ -101,7 +101,6 @@ COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
 // to get the COUNTER value
 COUNTER.load(std::sync::atomic::Ordering::Relaxed);
-
 ```
 
 ## How to Run the Project
