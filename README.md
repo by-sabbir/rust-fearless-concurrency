@@ -88,6 +88,22 @@ std::thread::scope(|s| {
     // spawn and join here
 });
 ```
+
+### Sharing Data with `Atomics`
+When we need to share a global state, ie. a counter, rust provides a bunch or Atomic premitives that are concurrency safe.We don't need to make a variable mutable for the atomics as the use a pattern called `interior mutability`. For example if we want to declare an i32 atomic counter, the assignment will be-
+
+```rust
+use std::sync::atomic::AtomicI32;
+static COUNTER: AtomicI3232 = AtomicI32::new(0);
+
+// to add a number to our atomic counter
+COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+
+// to get the COUNTER value
+COUNTER.load(std::sync::atomic::Ordering::Relaxed);
+
+```
+
 ## How to Run the Project
 
 To run this project, simply execute the following command:
