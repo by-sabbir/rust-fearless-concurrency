@@ -6,4 +6,4 @@ edition = "2021"
 [dependencies]
 
 [workspace]
-members = [ "deviding-workloads-in-threads","sharing-data-in-threads", "thread-builder-pattern"]
+members = [ "deviding-workloads-in-threads", "scoped-thread","sharing-data-in-threads", "thread-builder-pattern"]

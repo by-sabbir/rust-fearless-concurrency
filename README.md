@@ -76,7 +76,18 @@ So, when do we want to use `stack_size` when the threads are by default 2mb in s
 2. When we know the exact size of the stack.
 3. Reducing the stack size also helps the thread to load faster.
 
+### Scoped Thread
+[scoped-thread](./scoped-thread/src/main.rs)
 
+Scope thread is a conveniant way to spawn a group of thread without worrying about the `join()` function. For that we need to prove that the group of threads only belong to a scope.
+
+First we create a scoped thread. The `scope()` function takes another fuction that defines the thread lifecycle.
+
+```rust
+std::thread::scope(|s| {
+    // spawn and join here
+});
+```
 ## How to Run the Project
 
 To run this project, simply execute the following command:
