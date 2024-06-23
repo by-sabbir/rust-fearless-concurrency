@@ -13,3 +13,7 @@ version = "0.1.0"
 [[package]]
 name = "sharing-data-in-threads"
 version = "0.1.0"
+
+[[package]]
+name = "thread-builder-pattern"
+version = "0.1.0"

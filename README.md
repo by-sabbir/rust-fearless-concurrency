@@ -35,7 +35,7 @@ System threads are OS level construct. They can run multiple process at the same
 
 ## Sharing data from/with threads
 
-[sharing-data-in-thread](./sharing-data-in-threads/src)
+[sharing-data-in-thread](./sharing-data-in-threads/src/main.rs)
 
 To share data with thread we need to move the value with the help of closure ie.
 
@@ -59,15 +59,23 @@ let calculated_value = th.join().unwrap();
 println("{}", calculated_value);
 ```
 
-## How to Contribute
+### Thread Builder Pattern
+[thread-builder-patther](./thread-builder-pattern/src/main.rs)
+Thread builder is native to rust, we can name a thread to understand what's going on in the production. Usually used in a large program with a lot of threads spawned.
 
-If you'd like to contribute to this project, please follow these steps:
+```rust
+std::thread::Builder::new().
+    .name("Named Thread".to_string())
+    .stack_size(std::mem::size_of::<usize>() * 4)
+    .spawn(fn)
+    .unwrap();
+```
+Note: `::<>` this notation is called turbofish format.
+So, when do we want to use `stack_size` when the threads are by default 2mb in size.
+1. When we have to work with a lot of threads like 20K or 30K. (but in this case we should use async/await)
+2. When we know the exact size of the stack.
+3. Reducing the stack size also helps the thread to load faster.
 
-1. Fork the repository on GitHub.
-2. Clone your forked copy locally.
-3. Create a new branch for your changes (e.g., `feature/new-concurrency-pattern`).
-4. Make your changes and commit them with descriptive commit messages.
-5. Push your changes to your forked repository.
 
 ## How to Run the Project
 
