@@ -103,6 +103,20 @@ COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 COUNTER.load(std::sync::atomic::Ordering::Relaxed);
 ```
 
+### Mutexes
+Mutexes are mainly used for complex data synchronization which are not available in `sync::atomic::*` crate. Mutexes are a bit slower than the atomics. To initiate a Mutex we use the following syntax -
+```rust
+use std::sync::Mutex;
+...
+// Declaring a mutex with i32 vector array
+let data Mutex<Vec<i32>> = Mutex::new(Vec::new());
+```
+
+to access the value we gotta acquire the lock
+```rust
+let mut lock = data.lock().unwrap();
+// now we can perform any vector ops on lock
+```
 ## How to Run the Project
 
 To run this project, simply execute the following command:

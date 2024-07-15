@@ -11,6 +11,10 @@ name = "deviding-workloads-in-threads"
 version = "0.1.0"
 
 [[package]]
+name = "mutexes"
+version = "0.1.0"
+
+[[package]]
 name = "rust-fearless-concurrency"
 version = "0.1.0"
 
