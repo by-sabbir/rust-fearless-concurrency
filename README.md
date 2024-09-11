@@ -4,7 +4,9 @@
 
 ## Introduction
 
-This project, "Rust-Fearless-Concurrency", is a showcase of concurrent programming in Rust. It aims to provide a set of reusable and easy-to-use concurrency utilities for building scalable and performant systems.
+This project, "Rust-Fearless-Concurrency", is a showcase of concurrent programming in Rust. It aims
+to provide a set of reusable and easy-to-use concurrency utilities for building scalable and
+performant systems.
 
 ## Features
 
@@ -17,7 +19,8 @@ This project, "Rust-Fearless-Concurrency", is a showcase of concurrent programmi
 
 ## Fearless System Thread Concurrency
 
-System threads are OS level construct. They can run multiple process at the same time. If only one CPU is available, threads allow us to fake running multiple tasks.
+System threads are OS level construct. They can run multiple process at the same time. If only one
+CPU is available, threads allow us to fake running multiple tasks.
 
 - Threas live in the parent process and shares the memory with it.
 - Each thread has its own `stack` so it can run whatever we put into it.
@@ -25,8 +28,10 @@ System threads are OS level construct. They can run multiple process at the same
 - Threads are scheduled by the OS itself.
 - System threads are limited
   - We can get the max thread count in linux by `cat /proc/sys/kernel/threads-max`
-  - On my machine it's `126284`. Which is lot, but we should minimize the number of threads to optimize the thread schedule time. Or else our CPU will use a lot of time scheduling them.
-- It's always a good idea to create a thread-pool before hand. As creating threads it time consuming task.
+  - On my machine it's `126284`. Which is lot, but we should minimize the number of threads to
+  optimize the thread schedule time. Or else our CPU will use a lot of time scheduling them.
+- It's always a good idea to create a thread-pool before hand. As creating threads it time consuming
+task.
 
 ### Creating a Thread
 
@@ -44,7 +49,8 @@ let n = 1024;
 std::thread::spawn(move || do_something(n));
 ```
 
-Reading data from a spawned thread is farely simple. The data is returned as te output of `.join()` function. ie. if we modify the above script to do some calculation on `n` -
+Reading data from a spawned thread is farely simple. The data is returned as te output of `.join()`
+function. ie. if we modify the above script to do some calculation on `n` -
 
 ```rust
 do_calc(n: u32) -> u32 {
@@ -61,7 +67,8 @@ println("{}", calculated_value);
 
 ### Thread Builder Pattern
 [thread-builder-patther](./thread-builder-pattern/src/main.rs)
-Thread builder is native to rust, we can name a thread to understand what's going on in the production. Usually used in a large program with a lot of threads spawned.
+Thread builder is native to rust, we can name a thread to understand what's going on in the
+production. Usually used in a large program with a lot of threads spawned.
 
 ```rust
 std::thread::Builder::new().
@@ -72,16 +79,19 @@ std::thread::Builder::new().
 ```
 Note: `::<>` this notation is called turbofish format.
 So, when do we want to use `stack_size` when the threads are by default 2mb in size.
-1. When we have to work with a lot of threads like 20K or 30K. (but in this case we should use async/await)
+1. When we have to work with a lot of threads like 20K or 30K. (but in this case we should
+use async/await)
 2. When we know the exact size of the stack.
 3. Reducing the stack size also helps the thread to load faster.
 
 ### Scoped Thread
 [scoped-thread](./scoped-thread/src/main.rs)
 
-Scope thread is a conveniant way to spawn a group of thread without worrying about the `join()` function. For that we need to prove that the group of threads only belong to a scope.
+Scope thread is a conveniant way to spawn a group of thread without worrying about the `join()`
+function. For that we need to prove that the group of threads only belong to a scope.
 
-First we create a scoped thread. The `scope()` function takes another fuction that defines the thread lifecycle.
+First we create a scoped thread. The `scope()` function takes another fuction that defines the
+thread lifecycle.
 
 ```rust
 std::thread::scope(|s| {
@@ -90,7 +100,11 @@ std::thread::scope(|s| {
 ```
 
 ### Sharing Data with `Atomics`
-When we need to share a global state, ie. a counter, rust provides a bunch or Atomic premitives that are concurrency safe.We don't need to make a variable mutable for the atomics as the use a pattern called `interior mutability`. For example if we want to declare an i32 atomic counter, the assignment will be-
+[Atomics](./atomics/src/main.rs)
+When we need to share a global state, ie. a counter, rust provides a bunch or Atomic premitives
+that are concurrency safe.We don't need to make a variable mutable for the atomics as the use a
+pattern called `interior mutability`. For example if we want to declare an i32 atomic counter,
+the assignment will be-
 
 ```rust
 use std::sync::atomic::AtomicI32;
@@ -104,7 +118,10 @@ COUNTER.load(std::sync::atomic::Ordering::Relaxed);
 ```
 
 ### Mutexes
-Mutexes are mainly used for complex data synchronization which are not available in `sync::atomic::*` crate. Mutexes are a bit slower than the atomics. To initiate a Mutex we use the following syntax -
+[Mutexes](./mutexes/src/main.rs)
+Mutexes are mainly used for complex data synchronization which are not available in
+`sync::atomic::*` crate. Mutexes are a bit slower than the atomics. To initiate a Mutex we use
+the following syntax -
 ```rust
 use std::sync::Mutex;
 ...
@@ -117,6 +134,39 @@ to access the value we gotta acquire the lock
 let mut lock = data.lock().unwrap();
 // now we can perform any vector ops on lock
 ```
+
+### Read/Write Locks
+[RWLocks](./rwlocks/src/main.rs)
+We can request a read/write locks that allows us to lock a data for either reading or writing.
+Read locks are very fast where write locks wait for all the read ops to finish.
+RW Locks are part of `std::sync::RwLock`
+
+Let's inspect the following lines from the example
+```rust
+std::thread::spawn(|| loop {
+    let users = USERS.read().unwrap();
+    println!("current user in thread: {users:?}");
+    std::thread::sleep(std::time::Duration::from_secs(3));
+});
+
+loop {
+    println!("input new user: ");
+    let user = read_line();
+    if user == "q" {
+        break;
+    }
+    let mut lock = USERS.write().unwrap();
+    lock.push(user);
+}
+```
+
+We are spawning a thread and reading from the `USERS` static data with a read lock on it.
+Also we are adding a "thread sleep" for human readable aspect. On the second loop we are
+handling user input and and pushing it to `USERS` vector with write lock. Keep in mind
+the program will terminate if the user chooses to input `q`, also as we've discussed earlier
+the child thread will die as soon as the parent process terminates.
+
+
 ## How to Run the Project
 
 To run this project, simply execute the following command:
