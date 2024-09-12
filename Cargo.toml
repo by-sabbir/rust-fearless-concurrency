@@ -7,4 +7,4 @@ edition = "2021"
 once_cell = "1.19.0"
 
 [workspace]
-members = [ "atomics", "deviding-workloads-in-threads", "mutexes", "rwlocks", "scoped-thread","sharing-data-in-threads", "thread-builder-pattern"]
+members = [ "atomics", "deviding-workloads-in-threads", "mutexes", "rwlocks", "scoped-thread","sharing-data-in-threads", "thread-builder-pattern", "thread-parking"]
