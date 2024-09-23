@@ -7,6 +7,10 @@ name = "atomics"
 version = "0.1.0"
 
 [[package]]
+name = "channels"
+version = "0.1.0"
+
+[[package]]
 name = "deviding-workloads-in-threads"
 version = "0.1.0"
 

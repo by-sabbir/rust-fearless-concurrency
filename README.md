@@ -29,9 +29,9 @@ CPU is available, threads allow us to fake running multiple tasks.
 - System threads are limited
   - We can get the max thread count in linux by `cat /proc/sys/kernel/threads-max`
   - On my machine it's `126284`. Which is lot, but we should minimize the number of threads to
-  optimize the thread schedule time. Or else our CPU will use a lot of time scheduling them.
+    optimize the thread schedule time. Or else our CPU will use a lot of time scheduling them.
 - It's always a good idea to create a thread-pool before hand. As creating threads it time consuming
-task.
+  task.
 
 ### Creating a Thread
 
@@ -75,10 +75,12 @@ std::thread::Builder::new().
     .spawn(fn)
     .unwrap();
 ```
+
 Note: `::<>` this notation is called turbofish format.
 So, when do we want to use `stack_size` when the threads are by default 2mb in size.
+
 1. When we have to work with a lot of threads like 20K or 30K. (but in this case we should
-use async/await)
+   use async/await)
 2. When we know the exact size of the stack.
 3. Reducing the stack size also helps the thread to load faster.
 
@@ -115,9 +117,11 @@ COUNTER.load(std::sync::atomic::Ordering::Relaxed);
 ```
 
 ### [Mutexes](./mutexes/src/main.rs)
+
 Mutexes are mainly used for complex data synchronization which are not available in
 `sync::atomic::*` crate. Mutexes are a bit slower than the atomics. To initiate a Mutex we use
 the following syntax -
+
 ```rust
 use std::sync::Mutex;
 ...
@@ -126,17 +130,20 @@ let data Mutex<Vec<i32>> = Mutex::new(Vec::new());
 ```
 
 to access the value we gotta acquire the lock
+
 ```rust
 let mut lock = data.lock().unwrap();
 // now we can perform any vector ops on lock
 ```
 
 ### [Read/Write Locks](./rwlocks/src/main.rs)
+
 We can request a read/write locks that allows us to lock a data for either reading or writing.
 Read locks are very fast where write locks wait for all the read ops to finish.
 RW Locks are part of `std::sync::RwLock`
 
 Let's inspect the following lines from the example
+
 ```rust
 std::thread::spawn(|| loop {
     let users = USERS.read().unwrap();
@@ -162,6 +169,7 @@ the program will terminate if the user chooses to input `q`, also as we've discu
 the child thread will die as soon as the parent process terminates.
 
 ### [Thread Parking](./thread-parking/src/main.rs)
+
 Sometimes we want to park a thread and unpark it on-request. A thread can be parked by itself and
 unpark from outside the thread. For a parked thread we don't need to join them. We just `unpark` them
 to perform the tasks in the thread.
@@ -175,11 +183,25 @@ fn parkable_thread(n: u32) {
     }
 }
 ```
+
 Here we are parking the threads in a loop. And to access them and run the task we just need to run
 spawn new thread handler put it in a thread pool and access the pool with
 `threads[number].thread().unpark();` where number is the id given in `parkable_thread(n: u32)`
 function.
 
+### [Channel](./channels/src/main.rs)
+
+Rust includes a multiproducer single consumer(MPSC) channel in standard library. Channel has to be
+statically typed. We can start using mpsc by importing `std::sync::mpsc`. We need to get the sender
+and receiver from the mpsc channel before we proceed further -
+
+```rust
+let (tx, rx) = std::sync::mpsc::channel::<CHANNEL_TYPE>();
+
+// send and recieve data from the
+    tx.send(CHANNEL_TYPE);
+    let result = rx.recv();
+```
 
 ## How to Run the Project
 
