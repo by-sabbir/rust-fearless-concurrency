@@ -138,9 +138,9 @@ let mut lock = data.lock().unwrap();
 
 ### [Read/Write Locks](./rwlocks/src/main.rs)
 
-We can request a read/write locks that allows us to lock a data for either reading or writing.
-Read locks are very fast where write locks wait for all the read ops to finish.
-RW Locks are part of `std::sync::RwLock`
+We can request a read/write locks that allows us to lock a data for either reading or writing. Read
+locks are very fast where write locks wait for all the read ops to finish. RW Locks are part of
+`std::sync::RwLock`
 
 Let's inspect the following lines from the example
 
@@ -162,17 +162,17 @@ loop {
 }
 ```
 
-We are spawning a thread and reading from the `USERS` static data with a read lock on it.
-Also we are adding a "thread sleep" for human readable aspect. On the second loop we are
-handling user input and and pushing it to `USERS` vector with write lock. Keep in mind
-the program will terminate if the user chooses to input `q`, also as we've discussed earlier
-the child thread will die as soon as the parent process terminates.
+We are spawning a thread and reading from the `USERS` static data with a read lock on it. Also we
+are adding a "thread sleep" for human readable aspect. On the second loop we are handling user
+input and and pushing it to `USERS` vector with write lock. Keep in mind the program will terminate
+if the user chooses to input `q`, also as we've discussed earlier the child thread will die as soon
+as the parent process terminates.
 
 ### [Thread Parking](./thread-parking/src/main.rs)
 
 Sometimes we want to park a thread and unpark it on-request. A thread can be parked by itself and
-unpark from outside the thread. For a parked thread we don't need to join them. We just `unpark` them
-to perform the tasks in the thread.
+unpark from outside the thread. For a parked thread we don't need to join them. We just `unpark`
+them to perform the tasks in the thread.
 
 ```rust
 fn parkable_thread(n: u32) {
@@ -202,6 +202,33 @@ let (tx, rx) = std::sync::mpsc::channel::<CHANNEL_TYPE>();
     tx.send(CHANNEL_TYPE);
     let result = rx.recv();
 ```
+
+### [work-queue pattern](./work-queue/src/main.rs)
+
+Work queue is a common concurrency pattern where we create a pool of workers waiting on queues to
+get some jobs to do. When done, they sit idle waiting for receiving jobs. And as we queue jobs the
+idle workers picks up jobs from queue and the cycle continues.
+
+Let's go through the code...
+
+Initially we declared our work queue as a `String` of `VecDeque` for simplicity -
+
+```rust
+    static WORK_QUEUE: Lazy<Mutex<VecDeque<String>>> = Lazy::new(|| Mutex::new(VecDeque::new()));
+```
+
+with the following block we are simulating the total number of CPU in our system
+
+```rust
+    let cpu_count = 2;
+    let mut threads = Vec::with_capacity(cpu_count);
+    let mut broadcast = Vec::with_capacity(cpu_count);
+```
+
+Now we'll build our basic work queue logic [main.rs#L22-L34](https://github.com/by-sabbir/rust-fearless-concurrency/blob/c0784816011c23499e535e0824916330dba82c86/work-queue/src/main.rs#L22-L34)
+
+
+
 
 ## How to Run the Project
 
