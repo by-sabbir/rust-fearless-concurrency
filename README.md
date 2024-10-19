@@ -224,16 +224,70 @@ with the following block we are simulating the total number of CPU in our system
     let mut threads = Vec::with_capacity(cpu_count);
     let mut broadcast = Vec::with_capacity(cpu_count);
 ```
+We are ready build our work queue logic. First we need our mpsc `Sender` and `Receiver` channels.
+We will create an array holding all the senders(tx) later we will send jobs with the broadcast
+container. Then we'll move all our receiver in seperate threads the logic will be like below -
 
-Now we'll build our basic work queue logic [main.rs#L22-L34](https://github.com/by-sabbir/rust-fearless-concurrency/blob/c0784816011c23499e535e0824916330dba82c86/work-queue/src/main.rs#L22-L34)
+- we try to acuire lock on `WORK_QUEUE`
+- if successful then get a job from the queue
+- then we drop the lock and simulate the job by adding a duration
 
+Finally, we have the threads ready by adding them to the threads vector.
 
+```rust
+for cpu in 0..cpu_count {
+    let (tx, rx) = mpsc::channel::<()>();
+    broadcast.push(tx);
 
+    let th = thread::spawn(move || {
+        while rx.recv().is_ok() {
+            let mut lock = WORK_QUEUE.lock().unwrap();
+            if let Some(work) = lock.pop_front() {
+                std::mem::drop(lock);
+                println!("CPU #{cpu} got work {work}");
+                std::thread::sleep(Duration::from_secs(2));
+                println!("#{cpu} task finished");
+            } else {
+                println!("CPU #{cpu} found no work queue");
+            }
+        }
+    });
+
+    threads.push(th);
+}
+```
+
+The next loop is basically implementing the work-queue simulation. We try get the lock of the
+WORK_QUEUE, then check if we have less than 5 jobs queued. if true we add a new job to the queue.
+Note that we are consuming the queue from the front and adding jobs in the back simulating FIFO
+queue.
+
+```rust
+loop {
+    let sent = {
+        let mut lock = WORK_QUEUE.lock().unwrap();
+        let len = lock.len();
+        println!("Total Queue Item: #{len}");
+        if len < 5 {
+            lock.push_back("hello".to_string());
+            true
+        } else {
+            false
+        }
+    };
+
+    if sent {
+        broadcast.iter().for_each(|tx| tx.send(()).unwrap());
+    }
+    thread::sleep(Duration::from_secs(1));
+}
+```
 
 ## How to Run the Project
 
 To run this project, simply execute the following command:
 
 ```bash
+cd <target_directory>
 cargo run
 ```
