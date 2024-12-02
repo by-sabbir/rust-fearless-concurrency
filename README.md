@@ -283,6 +283,29 @@ loop {
 }
 ```
 
+### [Basic Async](./basic_async/src/main.rs)
+The perfect intro for `async` I found is in the [Async Book](https://rust-lang.github.io/async-book/)
+
+
+> In concurrent programming, the program does multiple things at the same time (or at least appears
+> to). Programming with threads is one form of concurrent programming. Code within a thread is
+> written in sequential style and the operating system executes threads concurrently. With async
+> programming, concurrency happens entirely within your program (the operating system is not
+> involved). An async runtime (which is just another crate in Rust) manages async tasks in
+> conjunction with the programmer explicitly yielding control by using the await keyword.
+
+We get two things from this -
+1. Async is not dependent on os threads
+2. And we need a runtime to do the context switching and the argonomics like `spawn`, `join`
+`await` etc
+
+For this example we are using a very basic async-runtime, `Futures`. Actually, it's half a runtime, it only
+executors. To add futures we need to run the following command -
+
+```bash
+cargo add futures
+```
+
 ## How to Run the Project
 
 To run this project, simply execute the following command:
